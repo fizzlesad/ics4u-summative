@@ -1,0 +1,88 @@
+.movies-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* Creates 5 equal columns */
+  grid-gap: 16px; /* Adds space between the items */
+  margin-bottom: 30px; /* Adds space for pagination at the bottom */
+}
+
+.movie-poster {
+  width: 100%; /* Ensures the images fill the column space */
+  height: auto; /* Maintains the aspect ratio of the images */
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Adds shadow for better visual appeal */
+  transition: transform 0.3s ease-in-out; /* Smooth scaling effect on hover */
+}
+
+.movie-poster:hover {
+  transform: scale(1.05); /* Slight zoom effect when hovered */
+}
+
+.pagination {
+  display: flex;
+  grid-column: span 5;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination a {
+  text-decoration: none;
+  padding: 10px 15px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.buy-button {
+  padding: 10px 20px;
+  font-size: 1em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: blue; /* Default color */
+  color: white;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.buy-button:hover {
+  background-color: rgb(60, 60, 255);
+  transform: scale(1.05);
+}
+
+.buy-button.added {
+  background-color: green; /* Green when added */
+  color: white;
+  cursor: not-allowed; /* Indicate it’s non-clickable */
+}
+
+.buy-button.added:hover {
+  transform: none; /* No hover effect when added */
+}
+
+@media (max-width: 1200px) {
+  .movies-container {
+    grid-template-columns: repeat(4, 1fr); /* 4 columns on medium screens */
+  }
+}
+
+@media (max-width: 900px) {
+  .movies-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on smaller screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .movies-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+  }
+}
+
+@media (max-width: 400px) {
+  .movies-container {
+    grid-template-columns: 1fr; /* 1 column on very small screens */
+  }
+}

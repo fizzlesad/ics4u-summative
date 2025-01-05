@@ -1,0 +1,41 @@
+button {
+  background-color: rgb(41, 41, 255);
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background-color 0.2s ease;
+  margin-top: 50px;
+  margin-left: 20px;
+}
+
+button:hover {
+  background-color: rgb(74, 74, 251);
+}
+
+@media (max-width: 768px) {
+  button {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+
+.movies-view-container {
+  height: auto;
+  width: 100%;
+  display: flex;
+  grid-template-rows: 150px, 150px, 150px, 150px;
+  grid-template-columns: 20% 80%;
+}
+
+.genre-list {
+  grid-column: 1;
+  grid-row: span 5;
+}
+
+.movie-posters {
+  grid-column: 2;
+}

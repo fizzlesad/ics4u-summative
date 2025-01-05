@@ -1,0 +1,113 @@
+.opaque-top-rectangle {
+  display: flex;
+  justify-content: space-between; /* Space out content */
+  align-items: center; /* Vertically align items */
+  background-color: rgba(20, 20, 20, 0.9); /* Slight transparency */
+  padding: 10px 20px; /* Spacing around content */
+  border-bottom: 2px solid #333; /* Subtle border for separation */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Header shadow */
+  color: #fff; /* White text color */
+  font-family: Arial, sans-serif;
+  position: sticky; /* Sticks to top on scroll */
+  top: 0;
+  z-index: 1000; /* Ensure it stays above other elements */
+}
+
+/* Possum Logo */
+.possum-logo {
+  height: 50px;
+  width: auto; /* Maintain aspect ratio */
+  margin-right: 10px;
+}
+
+/* Header Title */
+.title {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+}
+
+/* Right Side Content */
+.choice-side {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Spacing between buttons */
+}
+
+/* Sign-In and Sign-Up Buttons */
+.sign-in-button,
+.sign-up-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+/* Button Colors */
+.sign-in-button {
+  background-color: blue;
+  color: #fff;
+}
+
+.sign-up-button {
+  background-color: green;
+  color: #fff;
+}
+
+.sign-in-button:hover {
+  background-color: rgb(60, 60, 255);
+  transform: scale(1.05);
+}
+
+.sign-up-button:hover {
+  background-color: darkgreen;
+  transform: scale(1.05);
+}
+
+/* Welcome Message */
+.welcome-message {
+  font-size: 1em;
+  margin: 0 10px;
+  color: #b3b3b3;
+}
+
+/* User Buttons Container */
+.user-buttons {
+  display: flex;
+  gap: 10px; /* Space between buttons */
+}
+
+/* User Buttons */
+.user-buttons button {
+  padding: 8px 12px;
+  background-color: #444;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.user-buttons button:hover {
+  background-color: #555;
+  transform: scale(1.05);
+}
+
+/* Log Out Button */
+.logout-button {
+  padding: 8px 12px;
+  background-color: red;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 1em;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.logout-button:hover {
+  background-color: darkred;
+  transform: scale(1.05);
+}

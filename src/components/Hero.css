@@ -1,0 +1,152 @@
+.hero-container {
+  height: 800px;
+  width: 100%;
+}
+
+.hero-content-container {
+  height: 800px;
+  width: 100%;
+}
+
+.hero-background {
+  position: absolute;
+  z-index: -1;
+  height: 800px;
+  width: 100%;
+}
+
+.hero-main-text {
+  padding-top: 20px;
+  margin-left: 5%;
+  text-align: center;
+  color: white;
+  font-size: 110px;
+  font-weight: Bold;
+  width: 90%;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, Ubuntu,
+    sans-serif;
+}
+
+.price-text {
+  padding-top: 40px;
+  margin-left: 30%;
+  text-align: center;
+  color: #ffffff;
+  font-size: 40px;
+  width: 40%;
+  font-family: Netflix Sans, Helvetica Neue, Segoe UI, Roboto, Ubuntu,
+    sans-serif;
+}
+
+.search-bar {
+  margin-top: 30px;
+  margin-left: 30%;
+  background: rgba(255, 255, 255, 0.4);
+  width: 40%;
+  height: 5vw;
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  padding: 5px 5px;
+}
+
+.search-bar input {
+  background: transparent;
+  flex: 1;
+  border: 0;
+  outline: none;
+  padding: 10px 8px;
+  font-size: 2vw;
+  width: 35%;
+  color: white;
+}
+
+::placeholder {
+  color: white;
+}
+
+@media only screen and (max-width: 1500px) {
+  .hero-main-text {
+    font-size: 90px;
+  }
+
+  .price-text {
+    font-size: 35px;
+  }
+
+  .hero-container {
+    height: 700px;
+  }
+}
+
+@media only screen and (max-width: 1300px) {
+  .hero-main-text {
+    font-size: 80px;
+  }
+
+  .price-text {
+    font-size: 30px;
+  }
+
+  .hero-container {
+    height: 600px;
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .hero-main-text {
+    font-size: 70px;
+  }
+
+  .price-text {
+    font-size: 25px;
+  }
+
+  .hero-container {
+    height: 500px;
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  .hero-main-text {
+    font-size: 60px;
+  }
+
+  .price-text {
+    font-size: 20px;
+  }
+
+  .hero-container {
+    height: 400px;
+  }
+}
+
+@media only screen and (max-width: 830px) {
+  .hero-main-text {
+    font-size: 50px;
+  }
+
+  .hero-container {
+    height: 330px;
+  }
+}
+
+@media only screen and (max-width: 690px) {
+  .hero-main-text {
+    font-size: 40px;
+  }
+
+  .price-text {
+    font-size: 15px;
+  }
+}
+
+@media only screen and (max-width: 550px) {
+  .hero-main-text {
+    font-size: 30px;
+  }
+
+  .price-text {
+    font-size: 13px;
+  }
+}

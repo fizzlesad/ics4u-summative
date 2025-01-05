@@ -1,0 +1,93 @@
+/* General cart container styles */
+.cart-container {
+  padding: 20px;
+  background-color: #000000;
+  font-family: Arial, sans-serif;
+}
+
+/* Styling for individual cart items */
+.cart-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Images styling */
+.images {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Item details container */
+.item-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Title styling */
+.item-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+  flex: 1;
+}
+
+/* Remove button styling */
+.remove-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-button:hover {
+  background-color: #e60000;
+}
+
+/* Back button styling */
+.back-button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+  .cart-item {
+    grid-template-columns: 1fr;
+  }
+
+  .item-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .remove-button {
+    width: 100%;
+  }
+}
