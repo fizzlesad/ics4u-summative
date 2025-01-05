@@ -1,0 +1,121 @@
+@media only screen and (max-width: 1500px) {
+    .hero-main-text {
+      font-size: 90px;
+    }
+  
+    .price-text {
+      font-size: 35px;
+    }
+  
+    .hero-container {
+      height: 700px;
+    }
+  }
+  
+  @media only screen and (max-width: 1300px) {
+    .hero-main-text {
+      font-size: 80px;
+    }
+  
+    .price-text {
+      font-size: 30px;
+    }
+  
+    .hero-container {
+      height: 600px;
+    }
+  }
+  
+  @media only screen and (max-width: 1200px) {
+    .hero-main-text {
+      font-size: 70px;
+    }
+  
+    .price-text {
+      font-size: 25px;
+    }
+  
+    .hero-container {
+      height: 500px;
+    }
+  }
+  
+  @media only screen and (max-width: 1000px) {
+    .title {
+      font-size: 40px;
+      margin-top: 10px;
+    }
+  
+    .possum-logo {
+      height: 55px;
+    }
+  
+    .sign-in-button {
+      font-size: 20px;
+      padding-left: 25px;
+      padding-right: 25px;
+    }
+  
+    .sign-up-button {
+      font-size: 20px;
+      padding-left: 25px;
+      padding-right: 25px;
+    }
+  
+    .opaque-top-rectangle {
+      height: 70px;
+    }
+  
+    .hero-main-text {
+      font-size: 60px;
+    }
+  
+    .price-text {
+      font-size: 20px;
+    }
+  
+    .hero-container {
+      height: 400px;
+    }
+  }
+  
+  @media only screen and (max-width: 830px) {
+    .hero-main-text {
+      font-size: 50px;
+    }
+  
+    .hero-container {
+      height: 330px;
+    }
+  }
+  
+  @media only screen and (max-width: 690px) {
+    .hero-main-text {
+      font-size: 40px;
+    }
+  
+    .price-text {
+      font-size: 15px;
+    }
+  
+    .sign-up-button {
+      margin-right: 5px;
+      margin-left: 5px;
+    }
+  
+    .sign-in-button {
+      margin-right: 5px;
+      margin-left: 5px;
+    }
+  }
+  
+  @media only screen and (max-width: 550px) {
+    .hero-main-text {
+      font-size: 30px;
+    }
+  
+    .price-text {
+      font-size: 13px;
+    }
+  }
+  
