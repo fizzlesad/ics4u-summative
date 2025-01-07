@@ -4,12 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-  signInWithPopup,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import {createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
 import { auth } from "../firebase";
 import { useStoreContext } from "../context/index.jsx";
 
@@ -21,25 +16,8 @@ function RegisterView() {
   const { lastName, setLastName } = useStoreContext();
   const { genres } = useStoreContext();
   const { selectedGenres, setSelectedGenres } = useStoreContext();
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-
-  const checkPass = (e) => {
-    e.preventDefault();
-
-    if (selectedGenres.length < 10) {
-      alert("You must select at least 10 genres.");
-      return;
-    }
-
-    if (pass1 === pass2) {
-      setFirstName(e.target.firstname.value);
-      setLastName(e.target.lastname.value);
-      setEmail(e.target.email.value);
-      navigate("/movies");
-    } else {
-      alert("Passwords need to be the same.");
-    }
-  };
 
   const handleGenreChange = (genreId) => {
     setSelectedGenres((prev) => {
@@ -59,29 +37,32 @@ function RegisterView() {
       return;
     }
 
-    if (pass1 === pass2) {
-      setFirstName(e.target.firstname.value);
-      setLastName(e.target.lastname.value);
-      setEmail(e.target.email.value);
-      navigate("/movies");
-    } else {
+    if (pass1 !== pass2) {
       alert("Passwords need to be the same.");
+      return;
     }
 
-    /*try {*/
-    const user = (await createUserWithEmailAndPassword(auth, email, pass1))
-      .user;
-    await updateProfile(user, { displayName: `${firstName} ${lastName}` });
-    setUser(user);
-    navigate("/movies/all");
-
-    /*} catch (error) {
+    try {
+      const firstNameInput = e.target.firstname.value;
+      const lastNameInput = e.target.lastname.value;
+      const emailInput = e.target.email.value;
+      const userCredential = await createUserWithEmailAndPassword(auth, emailInput, pass1);
+      const user = userCredential.user;
+      await updateProfile(user, {displayName: `${firstNameInput} ${lastNameInput}`});
+      setFirstName(firstNameInput);
+      setLastName(lastNameInput);
+      setEmail(emailInput);
+      setUser(user);
+      navigate("/movies");
+    } catch (error) {
       if (error.code === "auth/email-already-in-use") {
-        alert("The email is already registered. Please use a different email or login.");
+        alert(
+          "The email is already registered. Please use a different email or login."
+        );
       } else {
         alert(`Error: ${error.message}`);
       }
-    }*/
+    }
   };
 
   const registerByGoogle = async () => {
@@ -91,11 +72,12 @@ function RegisterView() {
     }
 
     try {
-      const user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      const user = result.user;
       setUser(user);
-      navigate("/movies/all");
-    } catch {
-      alert("Error creating user with email and password!");
+      navigate("/movies");
+    } catch (error) {
+      alert(`Error signing in with Google: ${error.message}`);
     }
   };
 
@@ -105,7 +87,7 @@ function RegisterView() {
       <div className="register-container">
         <div className="form-container">
           <h2>Create an Account</h2>
-          <form onSubmit={(e) => registerByEmail(e)}>
+          <form onSubmit={registerByEmail}>
             <label htmlFor="first-name">First Name:</label>
             <input
               type="text"
@@ -157,10 +139,7 @@ function RegisterView() {
               Already have an account? <a href="#">Login</a>
             </p>
           </Link>
-          <button
-            onClick={() => registerByGoogle()}
-            className="register-button"
-          >
+          <button onClick={registerByGoogle} className="register-button">
             Register by Google
           </button>
         </div>
