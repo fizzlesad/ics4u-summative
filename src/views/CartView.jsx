@@ -10,6 +10,7 @@ const CartView = () => {
     return (
         <div className="cart-container">
             <Header />
+            <button onClick={() => checkout()}>Checkout</button>
             {cart.entrySeq().map(([key, value]) => {
                 return (
                     <div key={key} className="cart-item">
