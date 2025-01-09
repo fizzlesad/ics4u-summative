@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 import { Map } from 'immutable';
 
 const StoreContext = createContext();
@@ -54,7 +54,14 @@ export const StoreProvider = ({ children }) => {
         }
     ]);
     const [selectedGenres, setSelectedGenres] = useState([]);
-    const [cart, setCart] = useState(Map());
+    const [cart, setCart] = useState(() => {
+        const storedCart = localStorage.getItem("cart");
+        return storedCart ? Map(JSON.parse(storedCart)) : Map();
+    });
+
+    useEffect(() => {
+        localStorage.setItem("cart", JSON.stringify(cart.toJS()));
+    }, [cart]);
 
     return (
         <StoreContext.Provider value={{ email, setEmail, firstName, setFirstName, lastName, setLastName, genres, setGenres, selectedGenres, setSelectedGenres, cart, setCart }}>
