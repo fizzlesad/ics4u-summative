@@ -16,7 +16,7 @@ function RegisterView() {
   const { lastName, setLastName } = useStoreContext();
   const { genres } = useStoreContext();
   const { selectedGenres, setSelectedGenres } = useStoreContext();
-  const [user, setUser] = useState(null);
+  const {setUser} = useStoreContext();
   const navigate = useNavigate();
 
   const handleGenreChange = (genreId) => {

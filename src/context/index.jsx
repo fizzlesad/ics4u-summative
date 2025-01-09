@@ -7,6 +7,7 @@ export const StoreProvider = ({ children }) => {
     const [email, setEmail] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [user, setUser] = useState(null);
     const [genres, setGenres] = useState([
         {
             genre: "Action",
@@ -64,7 +65,7 @@ export const StoreProvider = ({ children }) => {
     }, [cart]);
 
     return (
-        <StoreContext.Provider value={{ email, setEmail, firstName, setFirstName, lastName, setLastName, genres, setGenres, selectedGenres, setSelectedGenres, cart, setCart }}>
+        <StoreContext.Provider value={{ user, setUser, email, setEmail, firstName, setFirstName, lastName, setLastName, genres, setGenres, selectedGenres, setSelectedGenres, cart, setCart }}>
             {children}
         </StoreContext.Provider>
     );
