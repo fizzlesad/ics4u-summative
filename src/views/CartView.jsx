@@ -25,7 +25,11 @@ const CartView = () => {
         }
 
         try {
-            const purchasedMovies = Array.from(cart.keys());
+            const purchasedMovies = Array.from(cart.values()).map((item) => item.title).filter((title) => title);
+            if (purchasedMovies.length === 0) {
+                throw new Error("No valid movies in cart");
+            }
+
             const userDoc = doc(db, "users", user.uid);
             await updateDoc(userDoc, {
                 purchasedMovies: [...(user.purchasedMovies || []), ...purchasedMovies],
