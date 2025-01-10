@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import "./SettingsView.css";
 
 const SettingsView = () => {
-  const { user, setUser, firstName, setFirstName, lastName, setLastName, email, setEmail, genres, selectedGenres, setSelectedGenres } = useStoreContext();
+  const { user, setUser, genres, selectedGenres, setSelectedGenres } = useStoreContext();
   const navigate = useNavigate();
   const [pastPurchases, setPastPurchases] = useState([]);
   const [newPassword, setNewPassword] = useState("");
@@ -51,12 +51,12 @@ const SettingsView = () => {
     try {
       if (user) {
         const auth = getAuth();
-        setFirstName(e.target.firstname.value);
-        setLastName(e.target.lastname.value);
-        if (e.target.email.value !== email) {
-          const newEmail = e.target.email.value;
-          await updateEmail(auth.currentUser, newEmail);
-          setEmail(newEmail);
+
+        const updatedFirstName = e.target.firstname.value;
+        const updatedLastName = e.target.lastname.value;
+        const updatedEmail = e.target.email.value;
+        if (updatedEmail !== user.email) {
+          await updateEmail(auth.currentUser, updatedEmail);
         }
         if (newPassword && newPassword === confirmPassword) {
           await updatePassword(auth.currentUser, newPassword);
@@ -64,13 +64,17 @@ const SettingsView = () => {
           alert("Passwords do not match.");
           return;
         }
-
         const userRef = doc(db, "users", user.uid);
         await updateDoc(userRef, {
           genres: selectedGenres,
-          firstName: e.target.firstname.value,
-          lastName: e.target.lastname.value,
+          firstName: updatedFirstName,
+          lastName: updatedLastName,
         }, { merge: true });
+        setUser(prevUser => ({
+          ...prevUser,
+          firstName: updatedFirstName,
+          lastName: updatedLastName,
+        }));
 
         alert("Settings updated successfully!");
       }
@@ -98,14 +102,27 @@ const SettingsView = () => {
             {user && (
               <>
                 <label htmlFor="email">Email:</label>
-                <input type="email" name="email" defaultValue={email} required />
-
+                <input 
+                  type="email" 
+                  name="email" 
+                  defaultValue={user.email} 
+                  disabled
+                  required 
+                />
                 <label htmlFor="first-name">First Name:</label>
-                <input type="text" name="firstname" defaultValue={firstName} required />
-
+                <input 
+                  type="text" 
+                  name="firstname" 
+                  defaultValue={user.firstName}
+                  required 
+                />
                 <label htmlFor="last-name">Last Name:</label>
-                <input type="text" name="lastname" defaultValue={lastName} required />
-
+                <input 
+                  type="text" 
+                  name="lastname" 
+                  defaultValue={user.lastName}
+                  required 
+                />
                 <label htmlFor="new-password">New Password:</label>
                 <input
                   type="password"
@@ -113,7 +130,6 @@ const SettingsView = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
-
                 <label htmlFor="confirm-password">Confirm New Password:</label>
                 <input
                   type="password"
@@ -121,7 +137,6 @@ const SettingsView = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-
                 <div className="genres-list">
                   {genres.map((genre) => (
                     <div key={genre.id} className="genre-checkbox">
@@ -135,7 +150,6 @@ const SettingsView = () => {
                     </div>
                   ))}
                 </div>
-
                 <input type="submit" value="Save Settings" />
               </>
             )}
@@ -145,7 +159,6 @@ const SettingsView = () => {
           <button onClick={() => navigate("/movies")}>Back</button>
         </div>
       </div>
-
       {user && (
         <div className="past-purchases">
           <h3>Past Purchases</h3>
@@ -153,7 +166,7 @@ const SettingsView = () => {
             <ul>
               {pastPurchases.map((purchase, index) => (
                 <li key={index}>
-                  {purchase.title} {/* Displaying the movie title */}
+                  {purchase.title}
                 </li>
               ))}
             </ul>
