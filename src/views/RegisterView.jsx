@@ -4,19 +4,20 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
-import {createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
-import { auth } from "../firebase";
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
+import { auth, db } from "../firebase";
 import { useStoreContext } from "../context/index.jsx";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 function RegisterView() {
   const [pass1, setPass1] = useState("");
   const [pass2, setPass2] = useState("");
-  const { email, setEmail } = useStoreContext();
-  const { firstName, setFirstName } = useStoreContext();
-  const { lastName, setLastName } = useStoreContext();
-  const { genres } = useStoreContext();
-  const { selectedGenres, setSelectedGenres } = useStoreContext();
-  const {setUser} = useStoreContext();
+  const { user, setUser, genres, selectedGenres, setSelectedGenres } = useStoreContext();
   const navigate = useNavigate();
 
   const handleGenreChange = (genreId) => {
@@ -29,41 +30,69 @@ function RegisterView() {
     });
   };
 
+  const createFirestoreUserDocument = async (firebaseUser, firstName, lastName) => {
+    const userDoc = doc(db, "users", firebaseUser.uid);
+    const userSnapshot = await getDoc(userDoc);
+
+    if (!userSnapshot.exists()) {
+      await setDoc(userDoc, {
+        firstName,
+        lastName,
+        email: firebaseUser.email,
+        purchasedMovies: [],
+        selectedGenres,
+      });
+    }
+  };
+
   const registerByEmail = async (e) => {
     e.preventDefault();
-
+  
     if (selectedGenres.length < 10) {
       alert("You must select at least 10 genres.");
       return;
     }
-
+  
     if (pass1 !== pass2) {
       alert("Passwords need to be the same.");
       return;
     }
-
+  
     try {
       const firstNameInput = e.target.firstname.value;
       const lastNameInput = e.target.lastname.value;
       const emailInput = e.target.email.value;
       const userCredential = await createUserWithEmailAndPassword(auth, emailInput, pass1);
-      const user = userCredential.user;
-      await updateProfile(user, {displayName: `${firstNameInput} ${lastNameInput}`});
-      setFirstName(firstNameInput);
-      setLastName(lastNameInput);
-      setEmail(emailInput);
-      setUser(user);
+      const firebaseUser = userCredential.user;
+      await updateProfile(firebaseUser, { displayName: `${firstNameInput} ${lastNameInput}` });
+      const userData = {
+        firstName: firstNameInput,
+        lastName: lastNameInput,
+        email: emailInput,
+        genres: selectedGenres,
+        purchasedMovies: [],
+      };
+  
+      await setDoc(doc(db, "users", firebaseUser.uid), userData);
+  
+      setUser({
+        ...firebaseUser,
+        firstName: firstNameInput,
+        lastName: lastNameInput,
+        email: emailInput,
+      });
+  
       navigate("/movies");
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
-        alert(
-          "The email is already registered. Please use a different email or login."
-        );
+        alert("The email is already registered. Please use a different email or login.");
+      } else if (error.code === "permission-denied") {
+        alert("Missing or insufficient permissions. Check Firestore rules.");
       } else {
         alert(`Error: ${error.message}`);
       }
     }
-  };
+  };  
 
   const registerByGoogle = async () => {
     if (selectedGenres.length < 10) {
@@ -73,8 +102,14 @@ function RegisterView() {
 
     try {
       const result = await signInWithPopup(auth, new GoogleAuthProvider());
-      const user = result.user;
-      setUser(user);
+      const firebaseUser = result.user;
+      const [firstName, lastName] = firebaseUser.displayName
+        ? firebaseUser.displayName.split(" ")
+        : ["", ""];
+      await createFirestoreUserDocument(firebaseUser, firstName, lastName);
+
+      setUser(firebaseUser);
+
       navigate("/movies");
     } catch (error) {
       alert(`Error signing in with Google: ${error.message}`);
@@ -89,16 +124,11 @@ function RegisterView() {
           <h2>Create an Account</h2>
           <form onSubmit={registerByEmail}>
             <label htmlFor="first-name">First Name:</label>
-            <input
-              type="text"
-              id="firstname"
-              defaultValue={firstName}
-              required
-            />
+            <input type="text" id="firstname" required />
             <label htmlFor="last-name">Last Name:</label>
-            <input type="text" id="lastname" defaultValue={lastName} required />
+            <input type="text" id="lastname" required />
             <label htmlFor="email">Email</label>
-            <input type="email" id="email" defaultValue={email} required />
+            <input type="email" id="email" required />
             <label htmlFor="pass">Password:</label>
             <input
               type="password"
@@ -134,7 +164,7 @@ function RegisterView() {
               Register
             </button>
           </form>
-          <Link to={`/login`}>
+          <Link to="/login">
             <p className="login-link">
               Already have an account? <a href="#">Login</a>
             </p>

@@ -4,6 +4,8 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useStoreContext } from "../context";
 import { Link } from "react-router-dom";
+import { db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 function GenreView() {
   const [done, setDone] = useState(false);
@@ -11,8 +13,20 @@ function GenreView() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [addedMovies, setAddedMovies] = useState(new Set());
+  const [purchasedMovies, setPurchasedMovies] = useState(new Set());
   const params = useParams();
-  const { setCart } = useStoreContext();
+  const { setCart, user } = useStoreContext();
+  
+  const fetchPurchasedMovies = async () => {
+    if (user?.uid) {
+      const userDoc = doc(db, "users", user.uid);
+      const userSnapshot = await getDoc(userDoc);
+      if (userSnapshot.exists()) {
+        const userData = userSnapshot.data();
+        setPurchasedMovies(new Set(userData.purchasedMovies || []));
+      }
+    }
+  };
 
   const movieData = async () => {
     const response = await axios.get(
@@ -36,18 +50,26 @@ function GenreView() {
   };
 
   const handleAddToCart = (movie) => {
-    setCart((prevCart) =>
-      prevCart.set(movie.id, {
-        title: movie.original_title,
-        url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-      })
-    );
-    setAddedMovies((prevSet) => new Set(prevSet).add(movie.id));
+    if (!purchasedMovies.has(movie.id)) {
+      setCart((prevCart) =>
+        prevCart.set(movie.id, {
+          title: movie.original_title,
+          url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        })
+      );
+      setAddedMovies((prevSet) => new Set(prevSet).add(movie.id));
+    } else {
+      alert("You have already purchased this movie.");
+    }
   };
 
   useEffect(() => {
     movieData();
   }, [page, params.genre_id]);
+
+  useEffect(() => {
+    fetchPurchasedMovies();
+  }, [user]);
 
   return (
     <div className="movie-posters">
@@ -55,11 +77,34 @@ function GenreView() {
         <div className="movies-container">
           {movieArray.length > 0 ? (
             movieArray.map((movie) => (
-              <div key={movie.id} className="movie-item">
+              <div
+                key={movie.id}
+                className={`movie-item ${
+                  purchasedMovies.has(movie.id) ? "purchased" : ""
+                }`}
+              >
                 <Link to={`/movies/details/${movie.id}`}>
-                  <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt={movie.title} className="movie-poster" />
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                    alt={movie.title}
+                    className="movie-poster"
+                  />
                 </Link>
-                <button className={`buy-button ${addedMovies.has(movie.id) ? "added" : ""}`} onClick={() => handleAddToCart(movie)}> {addedMovies.has(movie.id) ? "Added" : "Buy"} </button>
+                <button
+                  className={`buy-button ${
+                    addedMovies.has(movie.id) || purchasedMovies.has(movie.id)
+                      ? "added"
+                      : ""
+                  }`}
+                  onClick={() => handleAddToCart(movie)}
+                  disabled={purchasedMovies.has(movie.id)}
+                >
+                  {purchasedMovies.has(movie.id)
+                    ? "Purchased"
+                    : addedMovies.has(movie.id)
+                    ? "Added"
+                    : "Buy"}
+                </button>
               </div>
             ))
           ) : (
@@ -79,4 +124,3 @@ function GenreView() {
 }
 
 export default GenreView;
-

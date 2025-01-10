@@ -5,18 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { useStoreContext } from "../context";
 
 function Header() {
-  const { firstName } = useStoreContext();
-  let { email } = useStoreContext();
+  const { user } = useStoreContext();
   const navigate = useNavigate();
 
   const loginButtons = () => {
-    if (email == "") {
+    if (!user || !user.email) {
       return (
         <>
-          <Link to={`/login`}>
+          <Link to="/login">
             <button className="sign-in-button">Sign In</button>
           </Link>
-          <Link to={`/register`}>
+          <Link to="/register">
             <button className="sign-up-button">Sign Up</button>
           </Link>
         </>
@@ -24,7 +23,7 @@ function Header() {
     } else {
       return (
         <div className="user-info">
-          <p className="welcome-message">{`Hello ${firstName}!`}</p>
+          <p className="welcome-message">{`Hello ${user.firstName || "User"}!`}</p>
           <div className="user-buttons">
             <button onClick={() => navigate("/cart")}>Cart</button>
             <button onClick={() => navigate("/settings")}>Settings</button>
@@ -33,15 +32,13 @@ function Header() {
         </div>
       );
     }
-  }
+  };
 
   return (
     <div className="opaque-top-rectangle">
       <img className="possum-logo" src={logo} alt="Possum Logo" />
       <p className="title">Possum</p>
-      <div className="choice-side">
-        {loginButtons()}
-      </div>
+      <div className="choice-side">{loginButtons()}</div>
     </div>
   );
 }

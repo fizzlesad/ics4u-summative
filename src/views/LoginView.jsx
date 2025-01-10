@@ -11,8 +11,7 @@ function LoginView() {
   const [password, setPassword] = useState("");
   const emailRef = useRef(null);
   const navigate = useNavigate();
-  const { setEmail } = useStoreContext();
-  const [user, setUser] = useState(null);
+  const { setUser } = useStoreContext();
 
   async function loginByEmail(event) {
     event.preventDefault();
@@ -20,9 +19,8 @@ function LoginView() {
     try {
       const email = emailRef.current.value;
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      setEmail(email);
-      setUser(user);
+      const firebaseUser = userCredential.user;
+      setUser({...firebaseUser,email,});
       navigate("/movies");
     } catch (error) {
       console.error(error);
@@ -33,8 +31,8 @@ function LoginView() {
   async function loginByGoogle() {
     try {
       const result = await signInWithPopup(auth, new GoogleAuthProvider());
-      const user = result.user;
-      setUser(user);
+      const firebaseUser = result.user;
+      setUser(firebaseUser);
       navigate("/movies");
     } catch (error) {
       console.error("Error signing in with Google:", error);

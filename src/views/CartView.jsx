@@ -2,10 +2,12 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useStoreContext } from "../context";
 import { useNavigate } from "react-router-dom";
+import { db } from "../firebase";
+import { doc, updateDoc } from "firebase/firestore";
 import "./CartView.css";
 
 const CartView = () => {
-    const { cart, setCart } = useStoreContext();
+    const { cart, setCart, user } = useStoreContext();
     const navigate = useNavigate();
 
     const handleRemoveItem = (key) => {
@@ -16,17 +18,29 @@ const CartView = () => {
         });
     };
 
-    const checkout = () => {
+    const checkout = async () => {
         if (cart.size === 0) {
             alert("Your cart is empty. Add movies before checking out!");
             return;
         }
-        setCart(() => {
-            localStorage.removeItem("cart");
-            return cart.clear();
-        });
-        alert("Thank you for your purchase!");
-        navigate("/movies");
+
+        try {
+            const purchasedMovies = Array.from(cart.keys());
+            const userDoc = doc(db, "users", user.uid);
+            await updateDoc(userDoc, {
+                purchasedMovies: [...(user.purchasedMovies || []), ...purchasedMovies],
+            });
+            setCart(() => {
+                localStorage.removeItem("cart");
+                return cart.clear();
+            });
+
+            alert("Thank you for your purchase!");
+            navigate("/movies");
+        } catch (error) {
+            console.error("Error during checkout:", error);
+            alert("An error occurred during checkout. Please try again.");
+        }
     };
 
     return (
