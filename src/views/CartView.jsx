@@ -3,7 +3,7 @@ import Footer from "../components/Footer";
 import { useStoreContext } from "../context";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore"; // Ensure getDoc is imported
 import "./CartView.css";
 
 const CartView = () => {
@@ -25,15 +25,33 @@ const CartView = () => {
         }
 
         try {
-            const purchasedMovies = Array.from(cart.values()).map((item) => item.title).filter((title) => title);
-            if (purchasedMovies.length === 0) {
+            const purchasedMoviesFromCart = Array.from(cart.values())
+                .map((item) => item.title)
+                .filter((title) => title);
+
+            if (purchasedMoviesFromCart.length === 0) {
                 throw new Error("No valid movies in cart");
             }
 
             const userDoc = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userDoc);
+
+            let existingPurchasedMovies = [];
+
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                existingPurchasedMovies = userData.purchasedMovies || [];
+            } else {
+                // If the document doesn't exist, create it with an empty purchasedMovies array
+                await setDoc(userDoc, { purchasedMovies: [] });
+            }
+
+            const updatedPurchasedMovies = [...new Set([...existingPurchasedMovies, ...purchasedMoviesFromCart])];
+
             await updateDoc(userDoc, {
-                purchasedMovies: [...(user.purchasedMovies || []), ...purchasedMovies],
+                purchasedMovies: updatedPurchasedMovies,
             });
+
             setCart(() => {
                 localStorage.removeItem("cart");
                 return cart.clear();

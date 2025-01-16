@@ -12,87 +12,82 @@ import {
 } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { useStoreContext } from "../context/index.jsx";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 
 function RegisterView() {
   const [pass1, setPass1] = useState("");
   const [pass2, setPass2] = useState("");
-  const { user, setUser, genres, selectedGenres, setSelectedGenres } = useStoreContext();
+  const { setUser, genres, selectedGenres, setSelectedGenres } = useStoreContext();
   const navigate = useNavigate();
 
   const handleGenreChange = (genreId) => {
-    setSelectedGenres((prev) => {
-      if (prev.includes(genreId)) {
-        return prev.filter((id) => id !== genreId);
-      } else {
-        return [...prev, genreId];
-      }
-    });
+    setSelectedGenres((prev) =>
+      prev.includes(genreId) ? prev.filter((id) => id !== genreId) : [...prev, genreId]
+    );
   };
 
-  const createFirestoreUserDocument = async (firebaseUser, firstName, lastName) => {
-    const userDoc = doc(db, "users", firebaseUser.uid);
-    const userSnapshot = await getDoc(userDoc);
-
-    if (!userSnapshot.exists()) {
+  const saveUserDataToFirestore = async (uid) => {
+    try {
+      const userDoc = doc(db, "users", uid);
       await setDoc(userDoc, {
-        firstName,
-        lastName,
-        email: firebaseUser.email,
-        purchasedMovies: [],
         selectedGenres,
+        purchasedMovies: [], // Initialize purchased movies as an empty array
       });
+    } catch (error) {
+      console.error("Error saving data to Firestore:", error);
+      alert("There was an issue saving your preferences. Please try again later.");
     }
   };
 
   const registerByEmail = async (e) => {
     e.preventDefault();
-  
+
     if (selectedGenres.length < 10) {
-      alert("You must select at least 10 genres.");
-      return;
+        alert("You must select at least 10 genres.");
+        return;
     }
-  
+
     if (pass1 !== pass2) {
-      alert("Passwords need to be the same.");
-      return;
+        alert("Passwords must match.");
+        return;
     }
-  
+
     try {
-      const firstNameInput = e.target.firstname.value;
-      const lastNameInput = e.target.lastname.value;
-      const emailInput = e.target.email.value;
-      const userCredential = await createUserWithEmailAndPassword(auth, emailInput, pass1);
-      const firebaseUser = userCredential.user;
-      await updateProfile(firebaseUser, { displayName: `${firstNameInput} ${lastNameInput}` });
-      const userData = {
-        firstName: firstNameInput,
-        lastName: lastNameInput,
-        email: emailInput,
-        genres: selectedGenres,
-        purchasedMovies: [],
-      };
-  
-      await setDoc(doc(db, "users", firebaseUser.uid), userData);
-  
-      setUser({
-        ...firebaseUser,
-        firstName: firstNameInput,
-        lastName: lastNameInput,
-        email: emailInput,
-      });
-  
-      navigate("/movies");
+        const firstName = e.target.firstname.value;
+        const lastName = e.target.lastname.value;
+        const email = e.target.email.value;
+
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass1);
+        const firebaseUser = userCredential.user;
+
+        await updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` });
+
+        const userData = {
+            uid: firebaseUser.uid,
+            firstName,
+            lastName,
+            email,
+            password: pass1,
+        };
+
+        // Log the user data
+        console.log("Saving to localStorage:", userData);
+
+        // Store user data in LocalStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        // Save genres and purchased movies to Firestore
+        await saveUserDataToFirestore(firebaseUser.uid);
+
+        // Update user context
+        setUser({ ...userData, isLoggedIn: true });
+
+        navigate("/movies");
     } catch (error) {
-      if (error.code === "auth/email-already-in-use") {
-        alert("The email is already registered. Please use a different email or login.");
-      } else if (error.code === "permission-denied") {
-        alert("Missing or insufficient permissions. Check Firestore rules.");
-      } else {
         alert(`Error: ${error.message}`);
-      }
     }
-  };  
+};
+
 
   const registerByGoogle = async () => {
     if (selectedGenres.length < 10) {
@@ -103,16 +98,38 @@ function RegisterView() {
     try {
       const result = await signInWithPopup(auth, new GoogleAuthProvider());
       const firebaseUser = result.user;
+
       const [firstName, lastName] = firebaseUser.displayName
         ? firebaseUser.displayName.split(" ")
         : ["", ""];
-      await createFirestoreUserDocument(firebaseUser, firstName, lastName);
 
-      setUser(firebaseUser);
+      // Store user data in LocalStorage
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          uid: firebaseUser.uid,
+          firstName,
+          lastName,
+          email: firebaseUser.email,
+          password: null, // Password is not available for Google login
+        })
+      );
+
+      // Save genres and purchased movies to Firestore
+      await saveUserDataToFirestore(firebaseUser.uid);
+
+      // Update user context
+      setUser({
+        uid: firebaseUser.uid,
+        firstName,
+        lastName,
+        email: firebaseUser.email,
+        isLoggedIn: true,
+      });
 
       navigate("/movies");
     } catch (error) {
-      alert(`Error signing in with Google: ${error.message}`);
+      alert(`Error: ${error.message}`);
     }
   };
 
@@ -123,13 +140,13 @@ function RegisterView() {
         <div className="form-container">
           <h2>Create an Account</h2>
           <form onSubmit={registerByEmail}>
-            <label htmlFor="first-name">First Name:</label>
+            <label htmlFor="firstname">First Name:</label>
             <input type="text" id="firstname" required />
-            <label htmlFor="last-name">Last Name:</label>
+            <label htmlFor="lastname">Last Name:</label>
             <input type="text" id="lastname" required />
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email:</label>
             <input type="email" id="email" required />
-            <label htmlFor="pass">Password:</label>
+            <label htmlFor="password">Password:</label>
             <input
               type="password"
               id="password"
@@ -165,9 +182,7 @@ function RegisterView() {
             </button>
           </form>
           <Link to="/login">
-            <p className="login-link">
-              Already have an account? <a href="#">Login</a>
-            </p>
+            <p className="login-link">Already have an account? Login</p>
           </Link>
           <button onClick={registerByGoogle} className="register-button">
             Register by Google

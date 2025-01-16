@@ -16,7 +16,21 @@ function GenreView() {
   const [purchasedMovies, setPurchasedMovies] = useState(new Set());
   const params = useParams();
   const { setCart, user } = useStoreContext();
-  
+
+  const handleAddToCart = (movie) => {
+    if (!purchasedMovies.has(movie.title)) {
+      setCart((prevCart) =>
+        prevCart.set(movie.id, {
+          title: movie.original_title,
+          url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        })
+      );
+      setAddedMovies((prevSet) => new Set(prevSet).add(movie.id));
+    } else {
+      alert("You have already purchased this movie.");
+    }
+  };
+
   const fetchPurchasedMovies = async () => {
     if (user?.uid) {
       const userDoc = doc(db, "users", user.uid);
@@ -49,20 +63,6 @@ function GenreView() {
     movieData();
   };
 
-  const handleAddToCart = (movie) => {
-    if (!purchasedMovies.has(movie.id)) {
-      setCart((prevCart) =>
-        prevCart.set(movie.id, {
-          title: movie.original_title,
-          url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-        })
-      );
-      setAddedMovies((prevSet) => new Set(prevSet).add(movie.id));
-    } else {
-      alert("You have already purchased this movie.");
-    }
-  };
-
   useEffect(() => {
     movieData();
   }, [page, params.genre_id]);
@@ -80,7 +80,7 @@ function GenreView() {
               <div
                 key={movie.id}
                 className={`movie-item ${
-                  purchasedMovies.has(movie.id) ? "purchased" : ""
+                  purchasedMovies.has(movie.original_title) ? "purchased" : ""
                 }`}
               >
                 <Link to={`/movies/details/${movie.id}`}>
@@ -92,14 +92,14 @@ function GenreView() {
                 </Link>
                 <button
                   className={`buy-button ${
-                    addedMovies.has(movie.id) || purchasedMovies.has(movie.id)
+                    addedMovies.has(movie.id) || purchasedMovies.has(movie.original_title)
                       ? "added"
                       : ""
                   }`}
                   onClick={() => handleAddToCart(movie)}
-                  disabled={purchasedMovies.has(movie.id)}
+                  disabled={purchasedMovies.has(movie.original_title)}
                 >
-                  {purchasedMovies.has(movie.id)
+                  {purchasedMovies.has(movie.original_title)
                     ? "Purchased"
                     : addedMovies.has(movie.id)
                     ? "Added"

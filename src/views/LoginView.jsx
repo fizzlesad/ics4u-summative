@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import { useStoreContext } from "../context/index.jsx";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 
 function LoginView() {
@@ -13,32 +13,29 @@ function LoginView() {
   const navigate = useNavigate();
   const { setUser } = useStoreContext();
 
-  async function loginByEmail(event) {
+  const loginByEmail = async (event) => {
     event.preventDefault();
-
     try {
+      console.log("All localStorage data:", { ...localStorage }); // Log all localStorage data
+
       const email = emailRef.current.value;
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-      setUser({...firebaseUser,email,});
-      navigate("/movies");
-    } catch (error) {
-      console.error(error);
-      alert("Error signing in!");
-    }
-  }
+      const storedUser = JSON.parse(localStorage.getItem("user")); // Retrieve user data
+      console.log("Retrieved from localStorage:", storedUser);
 
-  async function loginByGoogle() {
-    try {
-      const result = await signInWithPopup(auth, new GoogleAuthProvider());
-      const firebaseUser = result.user;
-      setUser(firebaseUser);
-      navigate("/movies");
+      if (storedUser && storedUser.email === email) {
+        setUser({
+          ...storedUser,
+          isLoggedIn: true,
+        });
+        navigate("/movies");
+      } else {
+        alert("User not found in local storage. Please register.");
+      }
     } catch (error) {
-      console.error("Error signing in with Google:", error);
-      alert("Error signing in with Google!");
+      alert("Error signing in: " + error.message);
     }
-  }
+  };
+
 
   return (
     <>
@@ -64,9 +61,6 @@ function LoginView() {
               Login
             </button>
           </form>
-          <button onClick={loginByGoogle} className="login-button">
-            Login by Google
-          </button>
           <p className="register-link">
             New to Possum? <Link to="/register">Register now</Link>
           </p>
