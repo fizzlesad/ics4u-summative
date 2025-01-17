@@ -12,9 +12,9 @@ function Header() {
   const logout = () => {
     signOut(auth)
       .then(() => {
-        // Clear user context on logout, but keep localStorage
         setUser(null);
-        navigate("/"); // Redirect to the home page
+        localStorage.setItem("user", null);
+        navigate("/");
       })
       .catch((error) => {
         console.error("Error logging out:", error);
@@ -23,7 +23,6 @@ function Header() {
 
   const renderButtons = () => {
     if (!user) {
-      // User is not logged in
       return (
         <>
           <Link to="/login">
@@ -35,7 +34,6 @@ function Header() {
         </>
       );
     } else {
-      // User is logged in
       return (
         <div className="user-info">
           <p className="welcome-message">Hello, {user?.firstName || "User"}!</p>

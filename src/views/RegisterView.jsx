@@ -43,51 +43,41 @@ function RegisterView() {
     e.preventDefault();
 
     if (selectedGenres.length < 10) {
-        alert("You must select at least 10 genres.");
-        return;
+      alert("You must select at least 10 genres.");
+      return;
     }
 
     if (pass1 !== pass2) {
-        alert("Passwords must match.");
-        return;
+      alert("Passwords must match.");
+      return;
     }
 
     try {
-        const firstName = e.target.firstname.value;
-        const lastName = e.target.lastname.value;
-        const email = e.target.email.value;
+      const firstName = e.target.firstname.value;
+      const lastName = e.target.lastname.value;
+      const email = e.target.email.value;
 
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass1);
-        const firebaseUser = userCredential.user;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass1);
+      const firebaseUser = userCredential.user;
 
-        await updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` });
+      await updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` });
 
-        const userData = {
-            uid: firebaseUser.uid,
-            firstName,
-            lastName,
-            email,
-            password: pass1,
-        };
+      const userData = {
+        uid: firebaseUser.uid,
+        firstName,
+        lastName,
+        email,
+        password: pass1
+      };
+      localStorage.setItem("user", JSON.stringify(userData));
+      await saveUserDataToFirestore(firebaseUser.uid);
+      setUser({ ...userData, isLoggedIn: true });
 
-        // Log the user data
-        console.log("Saving to localStorage:", userData);
-
-        // Store user data in LocalStorage
-        localStorage.setItem("user", JSON.stringify(userData));
-
-        // Save genres and purchased movies to Firestore
-        await saveUserDataToFirestore(firebaseUser.uid);
-
-        // Update user context
-        setUser({ ...userData, isLoggedIn: true });
-
-        navigate("/movies");
+      navigate("/movies");
     } catch (error) {
-        alert(`Error: ${error.message}`);
+      alert(`Error: ${error.message}`);
     }
-};
-
+  };
 
   const registerByGoogle = async () => {
     if (selectedGenres.length < 10) {
@@ -102,8 +92,6 @@ function RegisterView() {
       const [firstName, lastName] = firebaseUser.displayName
         ? firebaseUser.displayName.split(" ")
         : ["", ""];
-
-      // Store user data in LocalStorage
       localStorage.setItem(
         "user",
         JSON.stringify({
@@ -111,14 +99,10 @@ function RegisterView() {
           firstName,
           lastName,
           email: firebaseUser.email,
-          password: null, // Password is not available for Google login
         })
       );
 
-      // Save genres and purchased movies to Firestore
       await saveUserDataToFirestore(firebaseUser.uid);
-
-      // Update user context
       setUser({
         uid: firebaseUser.uid,
         firstName,

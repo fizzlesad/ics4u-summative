@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import { useStoreContext } from "../context/index.jsx";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../firebase";
 
 function LoginView() {
@@ -16,26 +16,43 @@ function LoginView() {
   const loginByEmail = async (event) => {
     event.preventDefault();
     try {
-      console.log("All localStorage data:", { ...localStorage }); // Log all localStorage data
-
       const email = emailRef.current.value;
-      const storedUser = JSON.parse(localStorage.getItem("user")); // Retrieve user data
-      console.log("Retrieved from localStorage:", storedUser);
-
-      if (storedUser && storedUser.email === email) {
-        setUser({
-          ...storedUser,
-          isLoggedIn: true,
-        });
-        navigate("/movies");
-      } else {
-        alert("User not found in local storage. Please register.");
-      }
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      const userData = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        firstName: firebaseUser.displayName?.split(" ")[0] || "User",
+        lastName: firebaseUser.displayName?.split(" ")[1] || "",
+        password: password
+      };
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+      navigate("/movies");
     } catch (error) {
       alert("Error signing in: " + error.message);
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+      const userData = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        firstName: firebaseUser.displayName?.split(" ")[0] || "User",
+        lastName: firebaseUser.displayName?.split(" ")[1] || "",
+        password: null
+      };
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+      navigate("/movies");
+    } catch (error) {
+      alert("Error signing in with Google: " + error.message);
+    }
+  };
 
   return (
     <>
@@ -61,6 +78,11 @@ function LoginView() {
               Login
             </button>
           </form>
+
+          <button onClick={loginWithGoogle} className="google-login-button">
+            Login with Google
+          </button>
+
           <p className="register-link">
             New to Possum? <Link to="/register">Register now</Link>
           </p>

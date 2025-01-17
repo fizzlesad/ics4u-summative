@@ -3,7 +3,7 @@ import Footer from "../components/Footer";
 import { useStoreContext } from "../context";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore"; // Ensure getDoc is imported
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore"; 
 import "./CartView.css";
 
 const CartView = () => {
@@ -42,7 +42,6 @@ const CartView = () => {
                 const userData = userSnap.data();
                 existingPurchasedMovies = userData.purchasedMovies || [];
             } else {
-                // If the document doesn't exist, create it with an empty purchasedMovies array
                 await setDoc(userDoc, { purchasedMovies: [] });
             }
 

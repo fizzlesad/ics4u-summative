@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useStoreContext } from "../context";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
+import { updatePassword } from "firebase/auth";
 import "./SettingsView.css";
 
 const SettingsView = () => {
@@ -14,10 +15,11 @@ const SettingsView = () => {
     const [pastPurchases, setPastPurchases] = useState([]);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
         if (!user) {
-            navigate("/login"); // Redirect to login if no user
+            navigate("/login");
             return;
         }
 
@@ -59,34 +61,48 @@ const SettingsView = () => {
         const updatedLastName = e.target.lastname.value;
 
         if (newPassword && newPassword !== confirmPassword) {
-            alert("Passwords do not match.");
+            setErrorMessage("Passwords do not match.");
+            return;
+        } else if (newPassword && newPassword.length < 6) {
+            setErrorMessage("Password should be at least 6 characters.");
             return;
         }
 
-        try {
-            const updatedUser = {
-                ...user,
-                firstName: updatedFirstName,
-                lastName: updatedLastName,
-                selectedGenres,
-            };
+        const updatedUser = {
+            ...user,
+            firstName: updatedFirstName,
+            lastName: updatedLastName,
+            selectedGenres,
+        };
 
+        if (newPassword && user?.providerData?.some((provider) => provider.providerId === "password")) {
+            updatePassword(auth.currentUser, newPassword)
+                .then(() => {
+                    updatedUser.password = newPassword;
+                    localStorage.setItem("user", JSON.stringify(updatedUser));
+                    setUser(updatedUser);
+                    alert("Settings updated successfully!");
+                })
+                .catch((error) => {
+                    console.error("Error updating password:", error);
+                    setErrorMessage("Error updating password. Please try again.");
+                });
+        } else {
             localStorage.setItem("user", JSON.stringify(updatedUser));
             setUser(updatedUser);
-
             alert("Settings updated successfully!");
-        } catch (error) {
-            console.error("Error updating settings:", error);
-            alert(`Error: ${error.message}`);
         }
     };
 
     if (!user) {
-        return null; // Prevent rendering if user is not logged in
+        return null;
     }
 
-    const isEmailUser = user?.providerId === "password";
+    const isGoogleUser = user?.providerData?.some(
+        (provider) => provider.providerId === "google.com"
+    );
 
+    console.log("User object:", user);
     return (
         <div>
             <Header />
@@ -106,6 +122,7 @@ const SettingsView = () => {
                             type="text"
                             name="firstname"
                             defaultValue={user.firstName}
+                            readOnly={isGoogleUser}
                             required
                         />
                         <label htmlFor="last-name">Last Name:</label>
@@ -113,9 +130,10 @@ const SettingsView = () => {
                             type="text"
                             name="lastname"
                             defaultValue={user.lastName}
+                            readOnly={isGoogleUser}
                             required
                         />
-                        {isEmailUser && (
+                        {!isGoogleUser && (
                             <>
                                 <label htmlFor="new-password">New Password:</label>
                                 <input
@@ -133,6 +151,7 @@ const SettingsView = () => {
                                 />
                             </>
                         )}
+                        {errorMessage && <p className="error-message">{errorMessage}</p>}
                         <div className="genres-list">
                             {genres.map((genre) => (
                                 <div key={genre.id} className="genre-checkbox">

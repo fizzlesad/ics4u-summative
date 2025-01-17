@@ -1,21 +1,54 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import { Map } from "immutable";
+import { auth } from "../firebase";
 
 const StoreContext = createContext();
 
 export const StoreProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         const storedUser = localStorage.getItem("user");
-        return storedUser ? JSON.parse(storedUser) : null;
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            delete parsedUser.password;
+            return parsedUser;
+        }
+        return null;
     });
 
     useEffect(() => {
-        if (user) {
-            localStorage.setItem("user", JSON.stringify(user));
-        } else {
-            localStorage.removeItem("user");
+        const storedUser = localStorage.getItem("user");
+        const parsedStoredUser = storedUser ? JSON.parse(storedUser) : null;
+
+        if (JSON.stringify(user) !== JSON.stringify(parsedStoredUser)) {
+            if (user) {
+                const safeUser = { ...user };
+                delete safeUser.password;
+                localStorage.setItem("user", JSON.stringify(safeUser));
+            } else {
+                localStorage.removeItem("user");
+            }
         }
     }, [user]);
+
+    const [cart, setCart] = useState(() => {
+        const storedCart = localStorage.getItem("cart");
+        try {
+            const parsedCart = storedCart ? JSON.parse(storedCart) : {};
+            return Map(parsedCart);
+        } catch (error) {
+            console.error("Failed to parse cart from localStorage:", error);
+            return Map();
+        }
+    });
+
+    useEffect(() => {
+        const storedCart = localStorage.getItem("cart");
+        const parsedCart = storedCart ? JSON.parse(storedCart) : null;
+
+        if (cart.toJS && JSON.stringify(cart.toJS()) !== JSON.stringify(parsedCart)) {
+            localStorage.setItem("cart", JSON.stringify(cart.toJS()));
+        }
+    }, [cart]);
 
     const [genres, setGenres] = useState([
         { genre: "Action", id: 28 },
@@ -32,25 +65,6 @@ export const StoreProvider = ({ children }) => {
     ]);
 
     const [selectedGenres, setSelectedGenres] = useState([]);
-
-    const [cart, setCart] = useState(() => {
-        const storedCart = localStorage.getItem("cart");
-        try {
-            const parsedCart = storedCart ? JSON.parse(storedCart) : {};
-            return Map(parsedCart); // Convert to Immutable.js Map
-        } catch (error) {
-            console.error("Failed to parse cart from localStorage:", error);
-            return Map(); // Return an empty Map if parsing fails
-        }
-    });
-
-    useEffect(() => {
-        if (Map.isMap(cart)) {
-            localStorage.setItem("cart", JSON.stringify(cart.toJS()));
-        } else {
-            console.warn("Cart is not a valid Immutable.js Map");
-        }
-    }, [cart]);
 
     const [pastPurchases, setPastPurchases] = useState([]);
 

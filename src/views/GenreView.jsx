@@ -12,22 +12,29 @@ function GenreView() {
   const [movieArray, setMovieArray] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [addedMovies, setAddedMovies] = useState(new Set());
+  const [addedMovies, setAddedMovies] = useState(() => {
+    const storedAddedMovies = localStorage.getItem("addedMovies");
+    return storedAddedMovies ? new Set(JSON.parse(storedAddedMovies)) : new Set();
+  });
   const [purchasedMovies, setPurchasedMovies] = useState(new Set());
   const params = useParams();
   const { setCart, user } = useStoreContext();
 
   const handleAddToCart = (movie) => {
-    if (!purchasedMovies.has(movie.title)) {
+    if (!purchasedMovies.has(movie.title) && !addedMovies.has(movie.id)) {
       setCart((prevCart) =>
         prevCart.set(movie.id, {
           title: movie.original_title,
           url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
         })
       );
-      setAddedMovies((prevSet) => new Set(prevSet).add(movie.id));
+      setAddedMovies((prevSet) => {
+        const updatedSet = new Set(prevSet).add(movie.id);
+        localStorage.setItem("addedMovies", JSON.stringify(Array.from(updatedSet)));
+        return updatedSet;
+      });
     } else {
-      alert("You have already purchased this movie.");
+      alert("You have already purchased or added this movie.");
     }
   };
 
@@ -113,9 +120,8 @@ function GenreView() {
         </div>
         <div className="pagination">
           <a onClick={() => setCurrentPage(1)}>&laquo;</a>
-          <a onClick={() => movePage(-1)}>{"<"}</a>
-          <a className="active">{page}</a>
-          <a onClick={() => movePage(1)}>{">"}</a>
+          <a onClick={() => movePage(-1)}>&#60;</a>
+          <a onClick={() => movePage(1)}>&#62;</a>
           <a onClick={() => setCurrentPage(totalPages)}>&raquo;</a>
         </div>
       </div>
