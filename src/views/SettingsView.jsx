@@ -102,7 +102,6 @@ const SettingsView = () => {
         (provider) => provider.providerId === "google.com"
     );
 
-    console.log("User object:", user);
     return (
         <div>
             <Header />

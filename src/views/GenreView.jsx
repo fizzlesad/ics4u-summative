@@ -1,9 +1,8 @@
 import "./GenreView.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useStoreContext } from "../context";
-import { Link } from "react-router-dom";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -12,22 +11,58 @@ function GenreView() {
   const [movieArray, setMovieArray] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [addedMovies, setAddedMovies] = useState(() => {
-    const storedAddedMovies = localStorage.getItem("addedMovies");
-    return storedAddedMovies ? new Set(JSON.parse(storedAddedMovies)) : new Set();
-  });
   const [purchasedMovies, setPurchasedMovies] = useState(new Set());
+  const [addedMovies, setAddedMovies] = useState(new Set());
   const params = useParams();
-  const { setCart, user } = useStoreContext();
+  const { cart, setCart, user } = useStoreContext();
+
+  const fetchPurchasedMovies = async () => {
+    if (user?.uid) {
+      try {
+        const userDoc = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userDoc);
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          setPurchasedMovies(new Set(userData.purchasedMovies || []));
+        }
+      } catch (error) {
+        console.error("Error fetching purchased movies:", error);
+      }
+    }
+  };
+
+  const fetchMovies = async () => {
+    try {
+      const response = await axios.get(
+        `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc&with_genres=${params.genre_id}&api_key=${import.meta.env.VITE_TMDB_KEY}`
+      );
+      setMovieArray(response.data.results);
+      setTotalPages(Math.min(response.data.total_pages, 500));
+      setDone(true);
+    } catch (error) {
+      console.error("Failed to fetch movies:", error);
+    }
+  };
+
+  useEffect(() => {
+    const storedAddedMovies = JSON.parse(localStorage.getItem("addedMovies")) || [];
+    const cartMovieIds = new Set(cart.keySeq().toArray());
+    setAddedMovies(new Set([...storedAddedMovies, ...cartMovieIds]));
+  }, [cart]);
+
+  useEffect(() => {
+    fetchMovies();
+    fetchPurchasedMovies();
+  }, [page, params.genre_id]);
 
   const handleAddToCart = (movie) => {
-    if (!purchasedMovies.has(movie.title) && !addedMovies.has(movie.id)) {
-      setCart((prevCart) =>
-        prevCart.set(movie.id, {
-          title: movie.original_title,
-          url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-        })
-      );
+    if (!purchasedMovies.has(movie.original_title) && !addedMovies.has(movie.id)) {
+      const updatedCart = cart.set(movie.id, {
+        title: movie.original_title,
+        url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+      });
+
+      setCart(updatedCart);
       setAddedMovies((prevSet) => {
         const updatedSet = new Set(prevSet).add(movie.id);
         localStorage.setItem("addedMovies", JSON.stringify(Array.from(updatedSet)));
@@ -38,45 +73,11 @@ function GenreView() {
     }
   };
 
-  const fetchPurchasedMovies = async () => {
-    if (user?.uid) {
-      const userDoc = doc(db, "users", user.uid);
-      const userSnapshot = await getDoc(userDoc);
-      if (userSnapshot.exists()) {
-        const userData = userSnapshot.data();
-        setPurchasedMovies(new Set(userData.purchasedMovies || []));
-      }
-    }
+  const getButtonState = (movie) => {
+    if (purchasedMovies.has(movie.original_title)) return "Purchased";
+    if (addedMovies.has(movie.id)) return "Added";
+    return "Buy";
   };
-
-  const movieData = async () => {
-    const response = await axios.get(
-      `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc&with_genres=${params.genre_id}&api_key=${import.meta.env.VITE_TMDB_KEY}`
-    );
-    setMovieArray(response.data.results);
-    setTotalPages(Math.min(response.data.total_pages, 500));
-    setDone(true);
-  };
-
-  const movePage = (x) => {
-    setDone(false);
-    setPage((prevPage) => Math.max(1, Math.min(totalPages, prevPage + x)));
-    movieData();
-  };
-
-  const setCurrentPage = (x) => {
-    setDone(false);
-    setPage(Math.min(totalPages, x));
-    movieData();
-  };
-
-  useEffect(() => {
-    movieData();
-  }, [page, params.genre_id]);
-
-  useEffect(() => {
-    fetchPurchasedMovies();
-  }, [user]);
 
   return (
     <div className="movie-posters">
@@ -86,9 +87,7 @@ function GenreView() {
             movieArray.map((movie) => (
               <div
                 key={movie.id}
-                className={`movie-item ${
-                  purchasedMovies.has(movie.original_title) ? "purchased" : ""
-                }`}
+                className={`movie-item ${purchasedMovies.has(movie.original_title) ? "purchased" : ""}`}
               >
                 <Link to={`/movies/details/${movie.id}`}>
                   <img
@@ -98,19 +97,11 @@ function GenreView() {
                   />
                 </Link>
                 <button
-                  className={`buy-button ${
-                    addedMovies.has(movie.id) || purchasedMovies.has(movie.original_title)
-                      ? "added"
-                      : ""
-                  }`}
+                  className={`buy-button ${getButtonState(movie) === "Added" || getButtonState(movie) === "Purchased" ? "added" : ""}`}
                   onClick={() => handleAddToCart(movie)}
-                  disabled={purchasedMovies.has(movie.original_title)}
+                  disabled={getButtonState(movie) === "Purchased"}
                 >
-                  {purchasedMovies.has(movie.original_title)
-                    ? "Purchased"
-                    : addedMovies.has(movie.id)
-                    ? "Added"
-                    : "Buy"}
+                  {getButtonState(movie)}
                 </button>
               </div>
             ))
@@ -119,10 +110,10 @@ function GenreView() {
           )}
         </div>
         <div className="pagination">
-          <a onClick={() => setCurrentPage(1)}>&laquo;</a>
-          <a onClick={() => movePage(-1)}>&#60;</a>
-          <a onClick={() => movePage(1)}>&#62;</a>
-          <a onClick={() => setCurrentPage(totalPages)}>&raquo;</a>
+          <a onClick={() => setPage(1)}>&laquo;</a>
+          <a onClick={() => setPage((prev) => Math.max(prev - 1, 1))}>&#60;</a>
+          <a onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}>&#62;</a>
+          <a onClick={() => setPage(totalPages)}>&raquo;</a>
         </div>
       </div>
     </div>

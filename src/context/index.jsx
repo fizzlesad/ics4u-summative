@@ -1,34 +1,46 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import { Map } from "immutable";
-import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 const StoreContext = createContext();
 
 export const StoreProvider = ({ children }) => {
+    let navigate;
+    try {
+        navigate = useNavigate();
+    } catch {
+        console.warn("useNavigate cannot be used outside a Router");
+    }
+
     const [user, setUser] = useState(() => {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            delete parsedUser.password;
-            return parsedUser;
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                delete parsedUser.password;
+                return parsedUser;
+            } catch (error) {
+                console.error("Failed to parse user from localStorage:", error);
+                return null;
+            }
         }
         return null;
     });
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        const parsedStoredUser = storedUser ? JSON.parse(storedUser) : null;
+        if (!user && navigate) {
+            navigate("/");
+        } else {
+            const storedUser = localStorage.getItem("user");
+            const parsedStoredUser = storedUser ? JSON.parse(storedUser) : null;
 
-        if (JSON.stringify(user) !== JSON.stringify(parsedStoredUser)) {
-            if (user) {
+            if (JSON.stringify(user) !== JSON.stringify(parsedStoredUser)) {
                 const safeUser = { ...user };
                 delete safeUser.password;
                 localStorage.setItem("user", JSON.stringify(safeUser));
-            } else {
-                localStorage.removeItem("user");
             }
         }
-    }, [user]);
+    }, [user, navigate]);
 
     const [cart, setCart] = useState(() => {
         const storedCart = localStorage.getItem("cart");

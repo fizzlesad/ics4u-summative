@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { useStoreContext } from "../src/context";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
+import ProtectedRoutes from "./util/ProtectedRoutes";
 
 function PrivateRoute({ element }) {
   const { user } = useStoreContext();
@@ -71,18 +72,20 @@ function App() {
           <Route path="/" element={<HomeView />} />
           <Route path="/register" element={<RegisterView genres={genres} />} />
           <Route path="/login" element={<LoginView />} />
-          <Route path="/movies" element={<MoviesView />}>
-            <Route path="genre/:genre_id" element={<GenreView />} />
-            <Route path="details/:id" element={<DetailView />} />
+          <Route element={<ProtectedRoutes />}>
+            <Route path="/movies" element={<MoviesView />}>
+              <Route path="genre/:genre_id" element={<GenreView />} />
+              <Route path="details/:id" element={<DetailView />} />
+            </Route>
+            <Route
+              path="/cart"
+              element={<PrivateRoute element={<CartView />} />}
+            />
+            <Route
+              path="/settings"
+              element={<PrivateRoute element={<SettingsView />} />}
+            />
           </Route>
-          <Route
-            path="/cart"
-            element={<PrivateRoute element={<CartView />} />}
-          />
-          <Route
-            path="/settings"
-            element={<PrivateRoute element={<SettingsView />} />}
-          />
         </Routes>
       </BrowserRouter>
     </StoreProvider>
