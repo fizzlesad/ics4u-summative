@@ -24,7 +24,8 @@ function LoginView() {
         email: firebaseUser.email,
         firstName: firebaseUser.displayName?.split(" ")[0] || "User",
         lastName: firebaseUser.displayName?.split(" ")[1] || "",
-        password: password
+        providerData: firebaseUser.providerData || [{ providerId: 'email/password' }],
+        password: password,
       };
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
@@ -44,7 +45,8 @@ function LoginView() {
         email: firebaseUser.email,
         firstName: firebaseUser.displayName?.split(" ")[0] || "User",
         lastName: firebaseUser.displayName?.split(" ")[1] || "",
-        password: null
+        providerData: firebaseUser.providerData || [{ providerId: 'google.com' }],
+        password: null,
       };
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);

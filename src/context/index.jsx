@@ -5,101 +5,103 @@ import { useNavigate } from "react-router-dom";
 const StoreContext = createContext();
 
 export const StoreProvider = ({ children }) => {
-    let navigate;
-    try {
-        navigate = useNavigate();
-    } catch {
-        console.warn("useNavigate cannot be used outside a Router");
-    }
+  let navigate;
+  try {
+    navigate = useNavigate();
+  } catch {
+    console.warn("useNavigate cannot be used outside a Router");
+  }
 
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                delete parsedUser.password;
-                return parsedUser;
-            } catch (error) {
-                console.error("Failed to parse user from localStorage:", error);
-                return null;
-            }
-        }
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        return parsedUser;
+      } catch (error) {
+        console.error("Failed to parse user from localStorage:", error);
         return null;
-    });
+      }
+    }
+    return null;
+  });
 
-    useEffect(() => {
-        if (!user && navigate) {
-            navigate("/");
-        } else {
-            const storedUser = localStorage.getItem("user");
-            const parsedStoredUser = storedUser ? JSON.parse(storedUser) : null;
+  useEffect(() => {
+    if (!user && navigate) {
+      navigate("/"); // If no user, redirect to home (or login)
+    } else {
+      const storedUser = localStorage.getItem("user");
+      const parsedStoredUser = storedUser ? JSON.parse(storedUser) : null;
 
-            if (JSON.stringify(user) !== JSON.stringify(parsedStoredUser)) {
-                const safeUser = { ...user };
-                delete safeUser.password;
-                localStorage.setItem("user", JSON.stringify(safeUser));
-            }
+      if (JSON.stringify(user) !== JSON.stringify(parsedStoredUser)) {
+        // Ensure providerData is always present
+        const safeUser = { ...user };
+        if (user?.providerData) {
+          safeUser.providerData = user.providerData;
         }
-    }, [user, navigate]);
+        delete safeUser.password;
+        localStorage.setItem("user", JSON.stringify(safeUser)); // Save updated user data
+      }
+    }
+  }, [user, navigate]);
 
-    const [cart, setCart] = useState(() => {
-        const storedCart = localStorage.getItem("cart");
-        try {
-            const parsedCart = storedCart ? JSON.parse(storedCart) : {};
-            return Map(parsedCart);
-        } catch (error) {
-            console.error("Failed to parse cart from localStorage:", error);
-            return Map();
-        }
-    });
+  const [cart, setCart] = useState(() => {
+    const storedCart = localStorage.getItem("cart");
+    try {
+      const parsedCart = storedCart ? JSON.parse(storedCart) : {};
+      return Map(parsedCart);
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage:", error);
+      return Map();
+    }
+  });
 
-    useEffect(() => {
-        const storedCart = localStorage.getItem("cart");
-        const parsedCart = storedCart ? JSON.parse(storedCart) : null;
+  useEffect(() => {
+    const storedCart = localStorage.getItem("cart");
+    const parsedCart = storedCart ? JSON.parse(storedCart) : null;
 
-        if (cart.toJS && JSON.stringify(cart.toJS()) !== JSON.stringify(parsedCart)) {
-            localStorage.setItem("cart", JSON.stringify(cart.toJS()));
-        }
-    }, [cart]);
+    if (cart.toJS && JSON.stringify(cart.toJS()) !== JSON.stringify(parsedCart)) {
+      localStorage.setItem("cart", JSON.stringify(cart.toJS()));
+    }
+  }, [cart]);
 
-    const [genres, setGenres] = useState([
-        { genre: "Action", id: 28 },
-        { genre: "Family", id: 10751 },
-        { genre: "Science Fiction", id: 878 },
-        { genre: "Adventure", id: 12 },
-        { genre: "Fantasy", id: 14 },
-        { genre: "Animation", id: 16 },
-        { genre: "History", id: 36 },
-        { genre: "Thriller", id: 53 },
-        { genre: "Comedy", id: 35 },
-        { genre: "Horror", id: 27 },
-        { genre: "Western", id: 37 },
-    ]);
+  const [genres, setGenres] = useState([
+    { genre: "Action", id: 28 },
+    { genre: "Family", id: 10751 },
+    { genre: "Science Fiction", id: 878 },
+    { genre: "Adventure", id: 12 },
+    { genre: "Fantasy", id: 14 },
+    { genre: "Animation", id: 16 },
+    { genre: "History", id: 36 },
+    { genre: "Thriller", id: 53 },
+    { genre: "Comedy", id: 35 },
+    { genre: "Horror", id: 27 },
+    { genre: "Western", id: 37 },
+  ]);
 
-    const [selectedGenres, setSelectedGenres] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [pastPurchases, setPastPurchases] = useState([]);
 
-    const [pastPurchases, setPastPurchases] = useState([]);
-
-    return (
-        <StoreContext.Provider
-            value={{
-                user,
-                setUser,
-                genres,
-                setGenres,
-                selectedGenres,
-                setSelectedGenres,
-                cart,
-                setCart,
-                pastPurchases,
-                setPastPurchases,
-            }}
-        >
-            {children}
-        </StoreContext.Provider>
-    );
+  return (
+    <StoreContext.Provider
+      value={{
+        user,
+        setUser,
+        genres,
+        setGenres,
+        selectedGenres,
+        setSelectedGenres,
+        cart,
+        setCart,
+        pastPurchases,
+        setPastPurchases,
+      }}
+    >
+      {children}
+    </StoreContext.Provider>
+  );
 };
 
 export const useStoreContext = () => {
-    return useContext(StoreContext);
+  return useContext(StoreContext);
 };

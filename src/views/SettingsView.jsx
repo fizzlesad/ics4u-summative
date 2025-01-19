@@ -1,16 +1,19 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { useNavigate } from "react-router-dom";
-import { useStoreContext } from "../context";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { updatePassword } from "firebase/auth";
+import { useStoreContext } from "../context";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./SettingsView.css";
 
 const SettingsView = () => {
     const { user, setUser, genres } = useStoreContext();
     const navigate = useNavigate();
+
+    const [firstname, setFirstname] = useState(user?.firstName || "");
+    const [lastname, setLastname] = useState(user?.lastName || "");
     const [selectedGenres, setSelectedGenres] = useState(user?.selectedGenres || []);
     const [pastPurchases, setPastPurchases] = useState([]);
     const [newPassword, setNewPassword] = useState("");
@@ -25,8 +28,6 @@ const SettingsView = () => {
 
         if (user.uid) {
             fetchUserData(user.uid);
-        } else {
-            console.warn("User ID is undefined.");
         }
     }, [user, navigate]);
 
@@ -39,8 +40,6 @@ const SettingsView = () => {
                 const userData = userSnap.data();
                 setSelectedGenres(userData.selectedGenres || []);
                 setPastPurchases(userData.purchasedMovies || []);
-            } else {
-                console.error("User not found in Firestore.");
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
@@ -57,29 +56,21 @@ const SettingsView = () => {
     const updateSettings = (e) => {
         e.preventDefault();
 
-        const updatedFirstName = e.target.firstname.value;
-        const updatedLastName = e.target.lastname.value;
-
         if (newPassword && newPassword !== confirmPassword) {
             setErrorMessage("Passwords do not match.");
-            return;
-        } else if (newPassword && newPassword.length < 6) {
-            setErrorMessage("Password should be at least 6 characters.");
             return;
         }
 
         const updatedUser = {
             ...user,
-            firstName: updatedFirstName,
-            lastName: updatedLastName,
+            firstName: firstname,
+            lastName: lastname,
             selectedGenres,
         };
 
         if (newPassword && user?.providerData?.some((provider) => provider.providerId === "password")) {
             updatePassword(auth.currentUser, newPassword)
                 .then(() => {
-                    updatedUser.password = newPassword;
-                    localStorage.setItem("user", JSON.stringify(updatedUser));
                     setUser(updatedUser);
                     alert("Settings updated successfully!");
                 })
@@ -88,7 +79,6 @@ const SettingsView = () => {
                     setErrorMessage("Error updating password. Please try again.");
                 });
         } else {
-            localStorage.setItem("user", JSON.stringify(updatedUser));
             setUser(updatedUser);
             alert("Settings updated successfully!");
         }
@@ -112,27 +102,26 @@ const SettingsView = () => {
                         <input
                             type="email"
                             name="email"
-                            defaultValue={user.email}
-                            disabled
-                            required
+                            value={user.email || ""}
+                            readOnly
                         />
-                        <label htmlFor="first-name">First Name:</label>
+                        <label htmlFor="firstname">First Name:</label>
                         <input
                             type="text"
                             name="firstname"
-                            defaultValue={user.firstName}
-                            readOnly={isGoogleUser}
-                            required
+                            value={firstname}
+                            onChange={(e) => setFirstname(e.target.value)}
+                            readOnly={isGoogleUser} // Ensure it's read-only if Google login
                         />
-                        <label htmlFor="last-name">Last Name:</label>
+                        <label htmlFor="lastname">Last Name:</label>
                         <input
                             type="text"
                             name="lastname"
-                            defaultValue={user.lastName}
-                            readOnly={isGoogleUser}
-                            required
+                            value={lastname}
+                            onChange={(e) => setLastname(e.target.value)}
+                            readOnly={isGoogleUser} // Ensure it's read-only if Google login
                         />
-                        {!isGoogleUser && (
+                        {!isGoogleUser && (  // Only show password fields for non-Google users
                             <>
                                 <label htmlFor="new-password">New Password:</label>
                                 <input
