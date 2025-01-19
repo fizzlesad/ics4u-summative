@@ -1,119 +1,158 @@
+/* Overall Page Styling */
 .settings-view {
-    font-family: 'Arial', sans-serif;
-    padding: 20px;
-    background-color: #f4f4f4;
-    min-height: 100vh; /* Ensures the page covers the full height */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* Align content at the top */
-  }
-  
-  /* Form container styling */
-  .form-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Align form container to the top */
-    height: auto;
-    margin-top: 50px; /* Add space to move the form container lower */
-    padding-bottom: 20px; /* Add some bottom padding to prevent sticking to footer */
-  }
-  
-  /* Darker background for the form */
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
+  background-color: #f4f4f4;
+  min-height: 100vh; /* Full-height page */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Align content at the top */
+}
+
+/* Form Container Styling */
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align form content to the top */
+  margin-top: 50px; /* Add spacing from the top */
+  padding-bottom: 20px; /* Prevent sticking to footer */
+}
+
+/* Form Styling */
+.form {
+  background-color: #e0e0e0; /* Subtle gray background for the form */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  position: relative; /* For stable layout of inner elements */
+}
+
+/* Labels Styling */
+label {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+}
+
+label[for="email"],
+label[for="first-name"],
+label[for="last-name"] {
+  color: #111; /* Darker color for these specific labels */
+}
+
+/* Inputs Styling */
+input[type="email"],
+input[type="text"],
+input[type="password"],
+input[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box; /* Prevent layout shifts with padding */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Read-only Email Input */
+input[type="email"]:read-only {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+/* Focus Effect */
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+  outline: none;
+}
+
+/* Submit Button Styling */
+input[type="submit"] {
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+input[type="submit"]:hover {
+  background-color: #2980b9;
+}
+
+input[type="submit"]:active {
+  transform: scale(0.98); /* Slight press effect */
+}
+
+/* Checkbox Group Styling */
+.genre-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  line-height: 1.5; /* Consistent spacing */
+}
+
+.genre-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease; /* Smooth hover animation */
+}
+
+.genre-checkbox input[type="checkbox"]:hover {
+  transform: scale(1.1); /* Subtle enlargement on hover */
+}
+
+.genre-checkbox label {
+  font-size: 16px;
+  color: #333;
+}
+
+/* Error Message Styling */
+.error-message {
+  color: red;
+  margin-top: 8px;
+  min-height: 20px; /* Reserve space to prevent shaking */
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Back Button Styling */
+button {
+  padding: 12px 24px;
+  background-color: #f39c12;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+button:hover {
+  background-color: #e67e22;
+}
+
+button:active {
+  transform: scale(0.98); /* Slight press effect */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
   .form {
-    background-color: #e0e0e0; /* Darker shade of light grey */
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 500px;
-  }
-  
-  /* General form label styling */
-  label {
-    display: block;
-    font-size: 16px;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #333; /* Default label color */
-  }
-  
-  /* Make the email, first name, and last name labels darker */
-  label[for="email"],
-  label[for="first-name"],
-  label[for="last-name"] {
-    color: #111; /* Darker color for these specific labels */
-  }
-  
-  input[type="email"],
-  input[type="text"],
-  input[type="submit"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-  }
-  
-  input[type="email"]:read-only {
-    background-color: #f0f0f0;
-    cursor: not-allowed;
-  }
-  
-  input[type="submit"] {
-    background-color: #3498db;
-    color: white;
-    cursor: pointer;
-    border: none;
-    transition: background-color 0.3s ease;
-  }
-  
-  input[type="submit"]:hover {
-    background-color: #2980b9;
-  }
-  
-  /* Genre checkboxes styling */
-  .genre-checkbox {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .genre-checkbox input {
-    margin-right: 10px; /* space between checkbox and text */
-  }
-  
-  .genre-checkbox label {
-    font-size: 16px;
-    color: #333;
-  }
-  
-  /* Back button styling */
-  button {
-    padding: 12px 24px;
-    background-color: #f39c12;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 16px;
-    margin-top: 20px;
-  }
-  
-  button:hover {
-    background-color: #e67e22;
-  }
-  
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .form {
       width: 90%;
-    }
-  
-    input[type="submit"],
-    button {
-      width: 100%;
-    }
   }
+
+  input[type="submit"],
+  button {
+      width: 100%; /* Full-width buttons on smaller screens */
+  }
+}

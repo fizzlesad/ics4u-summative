@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { updatePassword } from "firebase/auth";
 import { useStoreContext } from "../context";
@@ -19,6 +19,7 @@ const SettingsView = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -48,13 +49,27 @@ const SettingsView = () => {
     };
 
     const handleGenreChange = (genreId) => {
-        setSelectedGenres((prev) =>
-            prev.includes(genreId) ? prev.filter((id) => id !== genreId) : [...prev, genreId]
-        );
+        setSelectedGenres((prev) => {
+            const updatedGenres = prev.includes(genreId)
+                ? prev.filter((id) => id !== genreId)
+                : [...prev, genreId];
+
+            if (updatedGenres.length < 10) {
+                alert("You must select at least 10 genres.");
+                return prev;
+            }
+
+            return updatedGenres;
+        });
     };
 
-    const updateSettings = (e) => {
+    const updateSettings = async (e) => {
         e.preventDefault();
+
+        if (selectedGenres.length < 10) {
+            setErrorMessage("You must select at least 10 genres before saving.");
+            return;
+        }
 
         if (newPassword && newPassword !== confirmPassword) {
             setErrorMessage("Passwords do not match.");
@@ -68,19 +83,28 @@ const SettingsView = () => {
             selectedGenres,
         };
 
-        if (newPassword && user?.providerData?.some((provider) => provider.providerId === "password")) {
-            updatePassword(auth.currentUser, newPassword)
-                .then(() => {
-                    setUser(updatedUser);
-                    alert("Settings updated successfully!");
-                })
-                .catch((error) => {
-                    console.error("Error updating password:", error);
-                    setErrorMessage("Error updating password. Please try again.");
-                });
-        } else {
+        try {
+            setLoading(true);
+
+            const userRef = doc(db, "users", user.uid);
+            await updateDoc(userRef, {
+                firstName: firstname,
+                lastName: lastname,
+                selectedGenres,
+            });
+
+            if (newPassword && user?.providerData?.some((provider) => provider.providerId === "password")) {
+                await updatePassword(auth.currentUser, newPassword);
+            }
+
             setUser(updatedUser);
+            setErrorMessage("");
             alert("Settings updated successfully!");
+        } catch (error) {
+            console.error("Error updating settings:", error);
+            setErrorMessage("An error occurred while updating settings. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -96,22 +120,18 @@ const SettingsView = () => {
         <div>
             <Header />
             <div className="form-container">
+                {loading && <p>Loading...</p>}
                 <div className="form">
                     <form onSubmit={updateSettings}>
                         <label htmlFor="email">Email:</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={user.email || ""}
-                            readOnly
-                        />
+                        <input type="email" name="email" value={user.email || ""} readOnly />
                         <label htmlFor="firstname">First Name:</label>
                         <input
                             type="text"
                             name="firstname"
                             value={firstname}
                             onChange={(e) => setFirstname(e.target.value)}
-                            readOnly={isGoogleUser} // Ensure it's read-only if Google login
+                            readOnly={isGoogleUser}
                         />
                         <label htmlFor="lastname">Last Name:</label>
                         <input
@@ -119,9 +139,9 @@ const SettingsView = () => {
                             name="lastname"
                             value={lastname}
                             onChange={(e) => setLastname(e.target.value)}
-                            readOnly={isGoogleUser} // Ensure it's read-only if Google login
+                            readOnly={isGoogleUser}
                         />
-                        {!isGoogleUser && (  // Only show password fields for non-Google users
+                        {!isGoogleUser && (
                             <>
                                 <label htmlFor="new-password">New Password:</label>
                                 <input

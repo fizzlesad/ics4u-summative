@@ -12,7 +12,7 @@ function GenreView() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [purchasedMovies, setPurchasedMovies] = useState(new Set());
-    const [addedMovies, setAddedMovies] = useState(new Set()); // Declare addedMovies here
+    const [addedMovies, setAddedMovies] = useState(new Set());
     const params = useParams();
     const { cart, setCart, user } = useStoreContext();
 
@@ -46,7 +46,7 @@ function GenreView() {
 
     useEffect(() => {
         const cartMovieIds = new Set(cart.keySeq().toArray());
-        setAddedMovies(cartMovieIds); // Use the setter to update the state
+        setAddedMovies(cartMovieIds);
     }, [cart]);
 
     useEffect(() => {

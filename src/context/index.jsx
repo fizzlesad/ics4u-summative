@@ -28,19 +28,18 @@ export const StoreProvider = ({ children }) => {
 
   useEffect(() => {
     if (!user && navigate) {
-      navigate("/"); // If no user, redirect to home (or login)
+      navigate("/");
     } else {
       const storedUser = localStorage.getItem("user");
       const parsedStoredUser = storedUser ? JSON.parse(storedUser) : null;
 
       if (JSON.stringify(user) !== JSON.stringify(parsedStoredUser)) {
-        // Ensure providerData is always present
         const safeUser = { ...user };
         if (user?.providerData) {
           safeUser.providerData = user.providerData;
         }
         delete safeUser.password;
-        localStorage.setItem("user", JSON.stringify(safeUser)); // Save updated user data
+        localStorage.setItem("user", JSON.stringify(safeUser));
       }
     }
   }, [user, navigate]);

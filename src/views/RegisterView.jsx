@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, db } from "../firebase"; // Ensure this is correctly initialized
+import { auth, db } from "../firebase";
 import { useStoreContext } from "../context/index.jsx";
 import { doc, setDoc } from "firebase/firestore";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth"; // Import necessary functions
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 function RegisterView() {
   const [pass1, setPass1] = useState("");
@@ -25,7 +25,7 @@ function RegisterView() {
       const userDoc = doc(db, "users", uid);
       await setDoc(userDoc, {
         selectedGenres,
-        purchasedMovies: [], // Initialize purchased movies as an empty array
+        purchasedMovies: [],
       });
     } catch (error) {
       console.error("Error saving data to Firestore:", error);
@@ -56,16 +56,14 @@ function RegisterView() {
 
       await updateProfile(firebaseUser, { displayName: `${firstName} ${lastName}` });
 
-      // Ensure providerData is included here
       const userData = {
         uid: firebaseUser.uid,
         firstName,
         lastName,
         email,
-        providerData: firebaseUser.providerData || [{ providerId: 'email/password' }], // Ensure providerData is set
+        providerData: firebaseUser.providerData || [{ providerId: 'email/password' }], 
       };
       
-      // Storing the user in localStorage, including providerData
       localStorage.setItem("user", JSON.stringify(userData));
       await saveUserDataToFirestore(firebaseUser.uid);
       setUser({ ...userData, isLoggedIn: true });
@@ -84,23 +82,21 @@ function RegisterView() {
 
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider); // This should now work
+      const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
 
       const [firstName, lastName] = firebaseUser.displayName
         ? firebaseUser.displayName.split(" ")
         : ["", ""];
 
-      // Ensure providerData is included
       const userData = {
         uid: firebaseUser.uid,
         firstName,
         lastName,
         email: firebaseUser.email,
-        providerData: firebaseUser.providerData || [{ providerId: 'google.com' }], // Ensure providerData is set
+        providerData: firebaseUser.providerData || [{ providerId: 'google.com' }],
       };
 
-      // Storing the user in localStorage, including providerData
       localStorage.setItem("user", JSON.stringify(userData));
       await saveUserDataToFirestore(firebaseUser.uid);
       setUser({ ...userData, isLoggedIn: true });
